@@ -28,7 +28,7 @@ class AttendanceServiceTest {
     AttendantService attendantService;
 
     @Test
-    void test_add_to_queue() {
+    void addToQueueTest() {
         Solicitation solicitation = new Solicitation();
         solicitation.setSubject("Problemas com Cartão");
         solicitation.setDescription("Preciso de ajuda com a conta");
@@ -40,7 +40,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void test_retrieving_all_solicitations_from_queue() {
+    void retrievingAllSolicitationsFromQueueTest() {
         Solicitation solicitation1 = new Solicitation();
         solicitation1.setSubject("Problemas com Cartão");
         solicitation1.setDescription("Preciso de ajuda com o cartão");
@@ -59,7 +59,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void test_create_solicitation_and_assign_to_attendant() {
+    void createSolicitationAndAssignToAttendantTest() {
         Solicitation solicitation = new Solicitation();
         solicitation.setSubject("Outros Assuntos");
         solicitation.setDescription("Esqueci a senha");
@@ -76,7 +76,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void test_add_solicitation_to_full_attendant_list() {
+    void addSolicitationToFullAttendantListTest() {
         Attendant fullAttendant = new Attendant();
         fullAttendant.setName("João");
         fullAttendant.setServiceType(ServiceType.OTHER_SERVICES);
@@ -100,7 +100,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void test_handling_solicitations_with_invalid_subject() {
+    void handlingSolicitationsWithInvalidSubjectTest() {
         Solicitation solicitation = new Solicitation();
         solicitation.setSubject("Invalid_Subject");
         solicitation.setDescription("Test Description");
