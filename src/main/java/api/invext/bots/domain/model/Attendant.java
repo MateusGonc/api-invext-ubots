@@ -2,7 +2,6 @@ package api.invext.bots.domain.model;
 
 import api.invext.bots.domain.enums.ServiceType;
 import api.invext.bots.domain.utils.DomainConstants;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 

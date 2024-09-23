@@ -1,10 +1,10 @@
 package api.invext.bots.domain.service;
 
-import api.invext.bots.domain.enums.ServiceType;
 import api.invext.bots.domain.exception.InvalidServiceTypeException;
 import api.invext.bots.domain.model.Attendant;
 import api.invext.bots.domain.model.Solicitation;
 import api.invext.bots.domain.utils.DomainConstants;
+import api.invext.bots.factory.FactoryTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,14 +24,15 @@ class AttendanceServiceTest {
     @InjectMocks
     AttendanceService attendanceService;
 
+    @InjectMocks
+    FactoryTest factoryTest;
+
     @Mock
     AttendantService attendantService;
 
     @Test
     void addToQueueTest() {
-        Solicitation solicitation = new Solicitation();
-        solicitation.setSubject("Problemas com Cartão");
-        solicitation.setDescription("Preciso de ajuda com a conta");
+        Solicitation solicitation = factoryTest.getSolicitation();
 
         attendanceService.addToQueue(solicitation);
 
@@ -41,33 +42,19 @@ class AttendanceServiceTest {
 
     @Test
     void retrievingAllSolicitationsFromQueueTest() {
-        Solicitation solicitation1 = new Solicitation();
-        solicitation1.setSubject("Problemas com Cartão");
-        solicitation1.setDescription("Preciso de ajuda com o cartão");
+        List<Solicitation> solicitationList = factoryTest.getSolicitationList(2);
 
-        Solicitation solicitation2 = new Solicitation();
-        solicitation2.setSubject("Problemas com Cartão");
-        solicitation2.setDescription("Cartão quebrou");
-
-        attendanceService.addToQueue(solicitation1);
-        attendanceService.addToQueue(solicitation2);
-
+        solicitationList.forEach(solicitation -> attendanceService.addToQueue(solicitation));
         Queue<Solicitation> allSolicitations = attendanceService.getAllSolicitation();
 
-        assertTrue(allSolicitations.contains(solicitation1));
-        assertTrue(allSolicitations.contains(solicitation2));
+        assertTrue(allSolicitations.contains(solicitationList.getFirst()));
+        assertTrue(allSolicitations.contains(solicitationList.getLast()));
     }
 
     @Test
     void createSolicitationAndAssignToAttendantTest() {
-        Solicitation solicitation = new Solicitation();
-        solicitation.setSubject("Outros Assuntos");
-        solicitation.setDescription("Esqueci a senha");
-        solicitation.setCostumerID(123L);
-
-        Attendant attendant = new Attendant();
-        attendant.setName("João");
-        attendant.setServiceType(ServiceType.OTHER_SERVICES);
+        Attendant attendant = factoryTest.getAttendant();
+        Solicitation solicitation = factoryTest.getSolicitation();
 
         when(attendantService.getAllByType(solicitation.getSubject())).thenReturn(List.of(attendant));
 
@@ -77,22 +64,13 @@ class AttendanceServiceTest {
 
     @Test
     void addSolicitationToFullAttendantListTest() {
-        Attendant fullAttendant = new Attendant();
-        fullAttendant.setName("João");
-        fullAttendant.setServiceType(ServiceType.OTHER_SERVICES);
-        for (int i = 0; i < DomainConstants.SOLICITATION_LIMIT_PER_ATTENDANT; i++) {
-            Solicitation solicitation = new Solicitation();
-            solicitation.setSubject("Outros Assuntos");
-            solicitation.setDescription("Solicitacão " + i);
-            fullAttendant.addSolicitation(solicitation);
-        }
+        Attendant busyAttendant = factoryTest.getAttendant();
+        busyAttendant.setSolicitationList(factoryTest.getSolicitationList(DomainConstants.SOLICITATION_LIMIT_PER_ATTENDANT));
 
-        Solicitation newAboveLimitSolicitation = new Solicitation();
-        newAboveLimitSolicitation.setSubject("Outros Assuntos");
-        newAboveLimitSolicitation.setDescription("Solicitação acima do limite");
+        Solicitation newAboveLimitSolicitation = factoryTest.getSolicitation();
 
         when(attendantService.getAllByType(newAboveLimitSolicitation.getSubject()))
-                .thenReturn(List.of(fullAttendant));
+                .thenReturn(List.of(busyAttendant));
 
         attendanceService.create(newAboveLimitSolicitation);
 

@@ -1,6 +1,5 @@
 package api.invext.bots.application.controller;
 
-import api.invext.bots.domain.model.Attendant;
 import api.invext.bots.domain.model.Solicitation;
 import api.invext.bots.domain.service.SolicitationService;
 import io.swagger.v3.oas.annotations.Operation;
