@@ -1,0 +1,146 @@
+{
+	"info": {
+		"_postman_id": "9d96a7cb-e018-4569-8869-1add9d6299a9",
+		"name": "ubots",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33034762"
+	},
+	"item": [
+		{
+			"name": "attendant",
+			"item": [
+				{
+					"name": "post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Jose\",\r\n    \"serviceType\": \"CARDS\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/invext/attendant",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invext",
+								"attendant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/invext/attendant",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invext",
+								"attendant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get by name",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Joao\",\r\n    \"serviceType\": \"CARDS\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/invext/attendant/jose",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invext",
+								"attendant",
+								"jose"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "solicitation",
+			"item": [
+				{
+					"name": "post",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"subject\": \"Problemas com Cartão\",\r\n    \"description\": \"cartao perdido\",\r\n    \"costumerID\": \"12345\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/invext/solicitation",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invext",
+								"solicitation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/invext/solicitation",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"invext",
+								"solicitation"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
