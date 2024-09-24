@@ -1,5 +1,6 @@
 package api.invext.bots.application.advice;
 
+import api.invext.bots.domain.exception.InvalidDataException;
 import api.invext.bots.domain.exception.InvalidServiceTypeException;
 import api.invext.bots.domain.exception.RegisterNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = InvalidServiceTypeException.class)
     public ResponseEntity<Object> handleInvalidServiceTypeException(RegisterNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+    }
+
+    @ExceptionHandler(value = InvalidDataException.class)
+    public ResponseEntity<Object> handleInvalidDataException(InvalidDataException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
 

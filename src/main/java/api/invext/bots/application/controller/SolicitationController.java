@@ -61,7 +61,7 @@ public class SolicitationController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Solicitation solved successfully",
                     content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "solicitation not found")
+            @ApiResponse(responseCode = "400", description = "Invalid data")
 
     })
     public ResponseEntity<Solicitation> solveSolicitationFromAttendant(@PathVariable String attendantName,

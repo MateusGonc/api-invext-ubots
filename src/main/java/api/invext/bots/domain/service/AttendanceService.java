@@ -1,5 +1,6 @@
 package api.invext.bots.domain.service;
 
+import api.invext.bots.domain.exception.InvalidDataException;
 import api.invext.bots.domain.model.Attendant;
 import api.invext.bots.domain.model.Solicitation;
 import org.slf4j.Logger;
@@ -26,8 +27,6 @@ public class AttendanceService {
     private final Queue<Solicitation> solicitationQueue = new ConcurrentLinkedQueue<>();
 
     private final List<Solicitation> solvedSolicitationList = new LinkedList<>();
-
-    private Solicitation solicitationSolved = new Solicitation();
 
     public void addToQueue(Solicitation solicitation) {
         solicitationQueue.add(solicitation);
@@ -60,6 +59,7 @@ public class AttendanceService {
 
     public Solicitation solveSolicitationFromAttendant (String attendantName, Long solicitationId) {
         Attendant attendant = this.attendantService.getByName(attendantName);
+        List<Solicitation> solvedSolicitation = new ArrayList<>();
 
         attendant.getSolicitationList().removeIf(solicitation -> {
             boolean foundSolicitation = solicitation.getIdentifier().equals(solicitationId);
@@ -67,15 +67,19 @@ public class AttendanceService {
             if(foundSolicitation) {
                 solicitation.setSolvedDate(LocalDateTime.now());
                 solvedSolicitationList.add(solicitation);
-                solicitationSolved = solicitation;
+                solvedSolicitation.add(solicitation);
             }
 
             return foundSolicitation;
         });
 
-        CompletableFuture.runAsync(() -> sendNewSolicitationsToAttendant(attendantName));
+        if(!solvedSolicitation.isEmpty()) {
+            CompletableFuture.runAsync(() -> sendNewSolicitationsToAttendant(attendantName));
+            return solvedSolicitation.getFirst();
+        }
 
-        return solicitationSolved;
+        throw new InvalidDataException(String.format("Invalid data to solve solicitation %s attendant %s",
+                solicitationId.toString(), attendantName));
     }
 
     public void sendNewSolicitationsToAttendant(String attendantName) {
