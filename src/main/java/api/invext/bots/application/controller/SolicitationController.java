@@ -34,6 +34,17 @@ public class SolicitationController {
         return new ResponseEntity<>(solicitationService.getAll(), HttpStatus.OK);
     }
 
+    @GetMapping("/solved")
+    @Operation(summary = "Get all solicitation solved", description = "Retrieves all solicitation solved.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved the list",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Solicitation.class)))
+    })
+    public ResponseEntity<List<Solicitation>> getAllSolved() {
+        return new ResponseEntity<>(solicitationService.getAllSolved(), HttpStatus.OK);
+    }
+
     @PostMapping
     @Operation(summary = "Create a new solicitation", description = "Creates a new solicitation and returns the created solicitation.")
     @ApiResponses(value = {
@@ -43,5 +54,19 @@ public class SolicitationController {
     })
     public ResponseEntity<Solicitation> create(@RequestBody Solicitation solicitation) {
         return new ResponseEntity<>(solicitationService.create(solicitation), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/solve/{solicitationId}/attendant/{attendantName}")
+    @Operation(summary = "Solve a solicitation from attendant", description = "solve a solicitation and return.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Solicitation solved successfully",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "solicitation not found")
+
+    })
+    public ResponseEntity<Solicitation> solveSolicitationFromAttendant(@PathVariable String attendantName,
+                                                                       @PathVariable Long solicitationId) {
+        return new ResponseEntity<>(solicitationService.solveSolicitationFromAttendant(attendantName, solicitationId),
+                HttpStatus.OK);
     }
 }

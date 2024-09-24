@@ -2,14 +2,13 @@ package api.invext.bots.domain.service;
 
 import api.invext.bots.domain.model.Attendant;
 import api.invext.bots.domain.model.Solicitation;
-import api.invext.bots.domain.utils.DomainConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,10 @@ public class AttendanceService {
 
     private final Queue<Solicitation> solicitationQueue = new ConcurrentLinkedQueue<>();
 
+    private final List<Solicitation> solvedSolicitationList = new LinkedList<>();
+
+    private Solicitation solicitationSolved = new Solicitation();
+
     public void addToQueue(Solicitation solicitation) {
         solicitationQueue.add(solicitation);
     }
@@ -34,52 +37,61 @@ public class AttendanceService {
         return this.solicitationQueue;
     }
 
+    public List<Solicitation> getAllSolicitationSolved() {
+        return this.solvedSolicitationList;
+    }
+
     public Solicitation create(Solicitation solicitation) {
         List<Attendant> attendantList = attendantService.getAllByType(solicitation.getSubject());
-        boolean isAcceptedSolicitation = false;
+        attendantList = attendantList.stream().filter(Attendant::isAvailable).collect(Collectors.toList());
 
-        for (Attendant attendant : attendantList) {
-            if (attendant.isAvailable()) {
-                attendant.addSolicitation(solicitation);
-                isAcceptedSolicitation = true;
-                break;
-            }
-        }
+        Optional<Attendant> opAttendantAvailable = attendantList.stream()
+                .min(Comparator.comparingInt(attendant -> attendant.getSolicitationList().size()));
 
-        if (!isAcceptedSolicitation) {
+        if (opAttendantAvailable.isPresent()) {
+            Attendant attendant = opAttendantAvailable.get();
+            attendant.addSolicitation(solicitation);
+        } else {
             addToQueue(solicitation);
         }
 
         return solicitation;
     }
 
-    public void removeFinishedSolicitationsFromAttendants() {
-        this.attendantService.getAll().forEach(attendant -> attendant.setSolicitationList(
-                attendant.getSolicitationList().stream()
-                        .filter(solicitation -> {
-                            boolean isSolicitationStillValid = solicitation.getStartedResolution()
-                                    .isAfter((LocalDateTime.now().minusMinutes(DomainConstants.TIME_TO_SOLVE_SOLICITATION)));
+    public Solicitation solveSolicitationFromAttendant (String attendantName, Long solicitationId) {
+        Attendant attendant = this.attendantService.getByName(attendantName);
 
-                            if (!isSolicitationStillValid) {
-                                log.info(String.format("Solicitation time finished, removing solicitation description: %s", solicitation.getDescription()));
-                            }
+        attendant.getSolicitationList().removeIf(solicitation -> {
+            boolean foundSolicitation = solicitation.getIdentifier().equals(solicitationId);
 
-                            return isSolicitationStillValid;
-                        })
-                        .collect(Collectors.toList())));
+            if(foundSolicitation) {
+                solicitation.setSolvedDate(LocalDateTime.now());
+                solvedSolicitationList.add(solicitation);
+                solicitationSolved = solicitation;
+            }
+
+            return foundSolicitation;
+        });
+
+        CompletableFuture.runAsync(() -> sendNewSolicitationsToAttendant(attendantName));
+
+        return solicitationSolved;
     }
 
-    public void sendNewSolicitationsToAttendants() {
-        this.solicitationQueue.forEach(solicitation -> {
-            List<Attendant> attendantList = attendantService.getAllByType(solicitation.getSubject());
+    public void sendNewSolicitationsToAttendant(String attendantName) {
+        Attendant attendant = this.attendantService.getByName(attendantName);
+        Iterator<Solicitation> iterator = solicitationQueue.iterator();
 
-            attendantList.stream().filter(Attendant::isAvailable)
-                    .findFirst().ifPresent(attendant -> {
-                        log.info(String.format("Adding Solicitation: %s, to attendant: %s, team: %s", solicitation.getDescription(),
-                                attendant.getName(), attendant.getServiceType()));
-                        attendant.addSolicitation(solicitation);
-                        solicitationQueue.remove(solicitation);
-                    });
-        });
+        while (iterator.hasNext()) {
+            Solicitation solicitation = iterator.next();
+
+            if (attendant.getServiceType().getSubject().equalsIgnoreCase(solicitation.getSubject())) {
+                log.info("Adding Solicitation: {}, to attendant: {}, team: {}",
+                        solicitation.getDescription(), attendant.getName(), attendant.getServiceType());
+                attendant.getSolicitationList().add(solicitation);
+                iterator.remove();
+                break;
+            }
+        }
     }
 }

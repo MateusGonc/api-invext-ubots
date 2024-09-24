@@ -11,14 +11,15 @@ aplication(entrada da aplicação controller/handlers) e infraestrutura(serviço
 usando também linguagem ubíqua utilizando de termos que possam ser entendidos por todos os stakeholders.`
 
 
-> A imagem acima é um breve rascunho de como seria minha ideia para a criação da api,
+> A imagem acima é um breve rascunho com ideias para a criação da api,
 > relacionamentos e logica para a implementação. Abaixo, breve descritivo:
 > - `Minha ideia foi permitir que atendentes sejam cadastrados nos 3 possiveis times.`
-> - `Solicitações sejam enviadas por assuntos e distribuidas para os possíveis atendentes dos respectivos times,
- caso o time esteja todo ocupado a mensagem vai para uma fila FIFO, e um processo agendado de x em x tempo
-(tempo um pouco menor que o tempo necessáro para o atendimento da solicitação, para que mensagens não fiquem muito tempo paradas na fila)
-verifica se alguém ja está disponível para atender.`
-> - `Algumas validações basicas foram feitas, busca por atendente não encontrado (not found) e assunto inválido.`
+> - Solicitações sejam enviadas por assuntos e distribuidas para os possíveis atendentes dos respectivos times,
+também balanceando a quantidade de solcitações por atendente, para que nenhum fique sobrecarregado sozinho.
+> - `Caso o time esteja todo ocupado a mensagem vai para uma fila FIFO, após o resolvimento de uma das mensagens
+o respectivo atendente recebe uma nova caso hajam mensagens aguardando na fila, caso não haja assim que uma nova chegar,
+será feita a checagem de qual atendente tem menos solicitações e esse receberá.`
+> - Algumas validações basicas foram feitas, busca por atendente não encontrado (not found) e assunto inválido.
 
 ## 💻 Pré-requisitos
 
